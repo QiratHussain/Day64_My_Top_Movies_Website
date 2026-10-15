@@ -42,7 +42,10 @@ with app.app_context():
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    with app.app_context():
+        result = db.session.execute(db.select(Movies).order_by(Movies.rating))
+        all_movies = result.scalars()
+        return render_template("index.html",movies_list= all_movies)
 
 @app.route("/add",methods=['POST','GET'])
 def add():
@@ -53,6 +56,23 @@ def add():
             db.session.add(new_book)
             db.session.commit()
     return render_template("add.html", form= add_form)
+
+@app.route("/edit", methods=['POST','GET'])
+def edit():
+    if request.method=='POST':
+        movie_id = request.args.get('id')
+        with app.app_context():
+            movie_to_update = db.get_or_404(Movies, movie_id)  
+            movie_to_update.rating = request.form['Rating']
+            movie_to_update.review = request.form['Review']
+            db.session.commit()
+            return redirect(url_for('home'))
+    edit_form=EditForm()
+    return render_template("edit.html", form= edit_form)
+
+@app.route("/delete")
+def delete():
+    pass
 
 if __name__ == '__main__':
     app.run(debug=True)
