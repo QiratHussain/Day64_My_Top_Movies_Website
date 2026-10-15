@@ -39,6 +39,7 @@ class Movies(db.Model):
     year: Mapped[float] = mapped_column(Integer, nullable= False)
     img_url: Mapped[str] = mapped_column(String(250), nullable=False)
     rating: Mapped[float] = mapped_column(Float, nullable=False)
+    ranking: Mapped[float] = mapped_column(Float, nullable=True)
 
 with app.app_context():
     db.create_all()
@@ -48,7 +49,9 @@ with app.app_context():
 def home():
     with app.app_context():
         result = db.session.execute(db.select(Movies).order_by(Movies.rating))
-        all_movies = result.scalars()
+        all_movies = result.scalars().all()
+        for i in range(len(all_movies)):
+            all_movies[i].ranking=len(all_movies)-i
         return render_template("index.html",movies_list= all_movies)
 
 @app.route("/add",methods=['POST','GET'])
@@ -59,6 +62,7 @@ def add():
             new_book = Movies(title=request.form['title'],year=request.form['year'],description=request.form['description'],rating=request.form['rating'],review=request.form['review'],img_url=request.form['img_url'])
             db.session.add(new_book)
             db.session.commit()
+            return redirect(url_for('home'))
     return render_template("add.html", form= add_form)
 
 @app.route("/edit", methods=['POST','GET'])
