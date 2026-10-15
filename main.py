@@ -5,12 +5,20 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Float
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
-from wtforms.validators import DataRequired
+from wtforms.validators import DataRequired , URL
 import requests
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
 Bootstrap5(app)
+class AddForm(FlaskForm):
+    title = StringField('title', validators=[DataRequired()])
+    review = StringField('review', validators=[DataRequired()])
+    description = StringField('description', validators=[DataRequired()])
+    year = StringField('year', validators=[DataRequired()])
+    rating = StringField('rating', validators=[DataRequired()])
+    img_url = StringField('img_url', validators=[DataRequired(),URL()])
+    submit = SubmitField('Submit')
 
 class Base(DeclarativeBase):
     pass
@@ -24,7 +32,7 @@ class Movies(db.Model):
     title: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
     review: Mapped[str] = mapped_column(String(250), nullable=False)
     description: Mapped[str] = mapped_column(String(250), nullable=False)
-    year: Mapped[float] = mapped_column(Integer, primary_key=True)
+    year: Mapped[float] = mapped_column(Integer, nullable= False)
     img_url: Mapped[str] = mapped_column(String(250), nullable=False)
     rating: Mapped[float] = mapped_column(Float, nullable=False)
 
@@ -36,6 +44,18 @@ with app.app_context():
 def home():
     return render_template("index.html")
 
+@app.route("/add",methods=['POST','GET'])
+def add():
+    add_form=AddForm()
+    if request.method=='POST':
+        with app.app_context():
+            new_book = Movies(title=request.form['title'],year=request.form['year'],description=request.form['description'],rating=request.form['rating'],review=request.form['review'],img_url=request.form['img_url'])
+            db.session.add(new_book)
+            db.session.commit()
+    return render_template("add.html", form= add_form)
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+#https://image.tmdb.org/t/p/w500/tjrX2oWRCM3Tvarz38zlZM7Uc10.jpg
