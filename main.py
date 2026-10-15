@@ -19,7 +19,11 @@ class AddForm(FlaskForm):
     rating = StringField('rating', validators=[DataRequired()])
     img_url = StringField('img_url', validators=[DataRequired(),URL()])
     submit = SubmitField('Submit')
-
+class EditForm(FlaskForm):
+    Rating = StringField('Rating', validators=[DataRequired()])
+    Review= StringField('Review', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+    
 class Base(DeclarativeBase):
     pass
 
